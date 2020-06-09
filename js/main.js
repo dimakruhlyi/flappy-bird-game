@@ -7,6 +7,11 @@ window.onload = function(){
     const ctx = canvas.getContext('2d');
     const background = new Background(canvas, ctx);
     const bird = new Bird(250, 250, ctx);
+    const pipes = [];
+    this.setInterval(function(){
+        let pipeSet = generateRandomPipes(ctx, canvas.width, canvas.height);
+        pipes.push(pipeSet.top, pipeSet.bottom);
+    }, 1000);
 
     gameLoop();
     
@@ -15,6 +20,11 @@ window.onload = function(){
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         background.update();
         background.render();
+        pipes.forEach(function(pipe){
+            pipe.update();
+            pipe.render();
+        });
+       
         bird.update();
         bird.render();
         window.requestAnimationFrame(gameLoop);
@@ -72,4 +82,37 @@ Bird.prototype.render = function(){
     let renderX = this.xCord - this.width/2;
     let renderY = this.yCord - this.height/2;
     this.ctx.drawImage(this.birdImg, renderX, renderY);
+}
+
+//Creating pipes
+const Pipe = function(xCord, yCord, length, speed, ctx){
+    this.xCord = xCord;
+    this.yCord = yCord;
+    this.length = length;
+    this.ctx = ctx;
+    this.speed = speed;
+}
+
+Pipe.prototype.update = function(){
+    this.xCord -= this.speed;
+}
+
+Pipe.prototype.render = function(){
+    this.ctx.save();
+    this.ctx.fillStyle = "#000";
+    this.ctx.fillRect(this.xCord, this.yCord, 150, this.length);
+    this.ctx.fillStyle = "#0f0";
+    this.ctx.fillRect(this.xCord + 5, this.yCord + 5, 140, this.length - 10)
+
+    this.ctx.restore();
+}
+
+//Generating random pipes
+function generateRandomPipes(ctx, canvasWidth, canvasHeight){
+    let lengthTop = Math.round(Math.random()*200 + 50);
+    let lengthBottom = canvasHeight - 200 - lengthTop;
+    let returnVal = {};
+    returnVal.top = new Pipe(canvasWidth, -5, lengthTop, 4, ctx);
+    returnVal.bottom = new Pipe(canvasWidth, canvasHeight + 5 - lengthBottom, lengthTop, 4, ctx);
+    return returnVal;
 }
